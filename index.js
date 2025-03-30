@@ -608,7 +608,7 @@ app.get('/api/services', async (req, res) => {
         if (type) filter.type = type;
 
         if (location) {
-            filter.location = { $regex: new RegExp(location.trim(), "i") }; // Case-insensitive search
+            filter.location = { $regex: location.trim(), $options: "i" }; // ✅ Fixed Regex issue
         }
 
         const services = await Service.find(filter);
@@ -626,6 +626,7 @@ app.get('/api/services', async (req, res) => {
         });
     }
 });
+
 
 
 app.post("/api/emergency-sos", async (req, res) => {
