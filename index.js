@@ -608,15 +608,25 @@ app.get('/api/services', async (req, res) => {
         if (type) filter.type = type;
 
         if (location) {
-            filter.location = { $regex: location.trim(), $options: "i" }; // ✅ Fixed Regex issue
+            filter.location = { $regex: location.trim(), $options: "i" };
         }
 
         const services = await Service.find(filter);
 
+        // ✅ Transform MongoDB _id to id for Swift compatibility
+        const formattedServices = services.map(service => ({
+            id: service._id.toString(), // Convert MongoDB ObjectId to string
+            name: service.name,
+            type: service.type,
+            location: service.location,
+            rating: service.rating || 0, // Ensure rating exists
+            imageUrl: service.imageUrl || null
+        }));
+
         return res.status(200).json({
             status: true,
             message: "Filtered Services Retrieved Successfully",
-            data: services
+            data: formattedServices
         });
     } catch (err) {
         return res.status(500).json({
