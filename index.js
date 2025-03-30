@@ -574,7 +574,15 @@ app.get('/api/full-ride', async (req, res) => {
 app.post('/api/services', async (req, res) => {
     try {
         const { name, type, location, description, contactInfo, price } = req.body;
-        const newService = new Service({ name, type, location, description, contactInfo, price });
+        const newService = new Service({ 
+            name, 
+            type, 
+            location, 
+            description, 
+            contactInfo, 
+            price: price || "" // Ensure it's always a string
+        });
+
         await newService.save();
 
         return res.status(200).json({
@@ -586,10 +594,11 @@ app.post('/api/services', async (req, res) => {
         return res.status(500).json({
             status: false,
             message: err.message,
-            data: []
+            data: null
         });
     }
 });
+
 
 // ✅ Get Services by Type and Location
 app.get('/api/services', async (req, res) => {
