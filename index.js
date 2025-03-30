@@ -600,17 +600,19 @@ app.post('/api/services', async (req, res) => {
 });
 
 
-// ✅ Get Services by Type and Location
 app.get('/api/services', async (req, res) => {
     try {
         const { type, location } = req.query;
         let filter = {};
 
         if (type) filter.type = type;
-        if (location) filter.location = location;
+
+        if (location) {
+            filter.location = { $regex: new RegExp(location.trim(), "i") }; // Case-insensitive search
+        }
 
         const services = await Service.find(filter);
-        
+
         return res.status(200).json({
             status: true,
             message: "Filtered Services Retrieved Successfully",
@@ -624,6 +626,7 @@ app.get('/api/services', async (req, res) => {
         });
     }
 });
+
 
 app.post("/api/emergency-sos", async (req, res) => {
     try {
