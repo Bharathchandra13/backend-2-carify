@@ -375,7 +375,7 @@ app.post('/api/carpool', async (req, res) => {
 });
 
 // Search available rides
-app.get('/api/search', async (req, res) => {
+app.get("/api/search", async (req, res) => {
     try {
         const { from, to, date, travelers } = req.query;
 
@@ -384,31 +384,40 @@ app.get('/api/search', async (req, res) => {
             return res.status(400).json({
                 status: false,
                 message: "Missing required query parameters",
-                data: []
+                data: [],
             });
         }
+
+        console.log("Received search query:", { from, to, date, travelers });
+
+        // Convert date to MongoDB query range
+        const startDate = new Date(date);
+        const endDate = new Date(date);
+        endDate.setHours(23, 59, 59, 999); // Include the entire day
 
         // Find available rides based on query parameters
         const availableRides = await Ride.find({
             pickupLocation: from,
             dropoffLocation: to,
-            selectedDate: date,
-            availableSeats: { $gte: travelers }
+            selectedDate: { $gte: startDate, $lt: endDate },
+            availableSeats: { $gte: parseInt(travelers) },
         });
+
+        console.log("Fetched rides:", availableRides);
 
         if (availableRides.length === 0) {
             return res.status(200).json({
                 status: true,
                 message: "No available rides for this route",
-                data: []
+                data: [],
             });
         }
 
         return res.status(200).json({
             status: true,
             message: "Available rides found",
-            data: availableRides.map(ride => ({
-                id: ride._id,
+            data: availableRides.map((ride) => ({
+                id: ride._id.toString(),
                 name: ride.driverName,
                 car: ride.carModel,
                 price: ride.price,
@@ -417,14 +426,15 @@ app.get('/api/search', async (req, res) => {
                 image: ride.imageUrl,
                 pickup: ride.pickupLocation,
                 dropoff: ride.dropoffLocation,
-                availableSeats: ride.availableSeats
-            }))
+                availableSeats: ride.availableSeats,
+            })),
         });
     } catch (err) {
+        console.error("Error fetching rides:", err);
         return res.status(500).json({
             status: false,
-            message: err.message,
-            data: []
+            message: "Server error: " + err.message,
+            data: [],
         });
     }
 });
