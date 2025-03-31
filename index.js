@@ -379,6 +379,7 @@ app.get('/api/search', async (req, res) => {
     try {
         const { from, to, date, travelers } = req.query;
 
+        // Check for missing query parameters
         if (!from || !to || !date || !travelers) {
             return res.status(400).json({
                 status: false,
@@ -387,6 +388,7 @@ app.get('/api/search', async (req, res) => {
             });
         }
 
+        // Find available rides based on query parameters
         const availableRides = await Ride.find({
             pickupLocation: from,
             dropoffLocation: to,
