@@ -353,7 +353,15 @@ app.post('/api/carpool', async (req, res) => {
     try {
         const { pickupLocation, dropoffLocation, selectedDate, numberOfTravelers } = req.body;
 
-        const newCarpool = new Carpool({ pickupLocation, dropoffLocation, selectedDate, numberOfTravelers });
+        // Create a new carpool instance
+        const newCarpool = new Carpool({
+            pickupLocation,
+            dropoffLocation,
+            selectedDate,
+            numberOfTravelers
+        });
+
+        // Save to database
         await newCarpool.save();
 
         return res.status(201).json({
