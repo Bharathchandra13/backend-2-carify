@@ -5,6 +5,10 @@ const multer = require("multer");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
 
+const express = require('express');
+const app = express();
+app.use(express.json()); // Middleware to parse JSON body
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));  // For form-data
