@@ -1,41 +1,41 @@
+console.log("fghjkl");
+
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const multer = require("multer");
+const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
 
+// Import models (do not change the file names)
+const User = require("./module/signupSchema.js");
+const Login = require("./module/loginSchema.js");
+const Carpool = require("./module/carpoolSchema");
+const Ride = require("./module/RideSchema");
+const PoolerCreation = require("./module/PoolerCreation");
+const FullRide = require("./module/fullRideSchema");
+const Service = require("./module/serviceModel.js"); 
+const Booking = require("./module/Booking.js");
 
+
+
+dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));  // For form-data
 app.use(cors());
 const upload = multer();
 
-const connectDB = async () => {
-    try {
-        await mongoose.connect(process.env.MONGO_URI, { 
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        });
-        console.log("MongoDB Connected");
-    } catch (err) {
-        console.error("MongoDB Connection Error:", err);
-        process.exit(1);
-    }
-};
+const MONGO_URI = "mongodb+srv://bharath:bharath123@cluster0.zyvp4.mongodb.net/CarifyDB?retryWrites=true&w=majority";
 
-// Connect to DB before importing models
-connectDB().then(() => {
-    // Import models AFTER DB connection
-    const User = require("./module/signupSchema.js");
-    const Login = require("./module/loginSchema.js");
-    const Carpool = require("./module/carpoolSchema");
-    const Ride = require("./module/RideSchema");
-    const PoolerCreation = require("./module/PoolerCreation");
-    const FullRide = require("./module/fullRideSchema");
-    const Service = require("./module/serviceModel.js");
-    const Booking = require("./module/Booking.js");
+mongoose
+    .connect(MONGO_URI, { 
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+    })
+    .then(() => console.log("MongoDB Connected"))
+    .catch(err => console.error("MongoDB Connection Error:", err));
 
 
 // ✅ Base Route
