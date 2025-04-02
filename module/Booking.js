@@ -6,7 +6,7 @@ const bookingSchema = new mongoose.Schema({
     contactNumber: { type: String, required: true },
     timeSlot: { type: String, required: true },
     garageId: { type: mongoose.Schema.Types.ObjectId, ref: "Garage", required: true },
-    status: { type: String, default: "Completed" }
+    status: { type: String, default: "Pending" } // Keep status "Pending" until completed
 });
 
 module.exports = mongoose.model("Booking", bookingSchema);
