@@ -700,52 +700,26 @@ app.post("/api/emergency-sos", async (req, res) => {
 });
 
 
-// Create a new booking
 app.post("/api/bookings", async (req, res) => {
     try {
-        const { username, carModel, contactNumber, timeSlot, garageId } = req.body;
+        const booking = new Booking(req.body);
+        await booking.save();
 
-        // Validate input data
-        if (!username || !carModel || !contactNumber || !timeSlot || !garageId) {
-            return res.status(400).json({
-                status: false,
-                message: "All fields are required",
-                data: [],
-            });
-        }
-
-        // Debugging: Log incoming request body
-        console.log("Received booking request:", req.body);
-
-        // Create a new booking document
-        const newBooking = new Booking({
-            username,
-            carModel,
-            contactNumber,
-            timeSlot,
-            garageId,
-            status: "Pending", // Changed from "Completed" to "Pending"
-        });
-
-        // Save to database
-        await newBooking.save();
-
-        // Respond with success message
-        return res.status(201).json({
+        res.json({
             status: true,
-            message: "Booking saved successfully",
-            data: [newBooking],
+            message: "Booking confirmed successfully!",
+            data: [booking], // Ensure data is always an array
         });
-
     } catch (error) {
-        console.error("Error saving booking:", error);
-        return res.status(500).json({
+        console.error("Booking Error:", error);
+        res.status(500).json({
             status: false,
-            message: "Internal server error",
+            message: "Failed to book appointment",
             data: [],
         });
     }
 });
+
 
 
 // Get all bookings for a specific garage
