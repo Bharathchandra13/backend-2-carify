@@ -705,22 +705,48 @@ app.post("/api/bookings", async (req, res) => {
     try {
         const { username, carModel, contactNumber, timeSlot, garageId } = req.body;
 
+        // Validate input data
+        if (!username || !carModel || !contactNumber || !timeSlot || !garageId) {
+            return res.status(400).json({
+                status: false,
+                message: "All fields are required",
+                data: [],
+            });
+        }
+
+        // Debugging: Log incoming request body
+        console.log("Received booking request:", req.body);
+
+        // Create a new booking document
         const newBooking = new Booking({
             username,
             carModel,
             contactNumber,
             timeSlot,
             garageId,
-            status: "Completed"
+            status: "Pending", // Changed from "Completed" to "Pending"
         });
 
+        // Save to database
         await newBooking.save();
 
-        res.json({ status: true, message: "Booking saved successfully", data: [newBooking] });
+        // Respond with success message
+        return res.status(201).json({
+            status: true,
+            message: "Booking saved successfully",
+            data: [newBooking],
+        });
+
     } catch (error) {
-        res.status(500).json({ status: false, message: error.message, data: [] });
+        console.error("Error saving booking:", error);
+        return res.status(500).json({
+            status: false,
+            message: "Internal server error",
+            data: [],
+        });
     }
 });
+
 
 // Get all bookings for a specific garage
 app.get("/api/garage/:garageId/appointments", async (req, res) => {
