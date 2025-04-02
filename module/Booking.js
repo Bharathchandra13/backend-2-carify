@@ -9,7 +9,4 @@ const bookingSchema = new mongoose.Schema({
     status: { type: String, default: "Pending" }
 });
 
-// Prevent model overwrite error
-const Booking = mongoose.models.Booking || mongoose.model("Booking", bookingSchema);
-
-module.exports = Booking;
+module.exports = mongoose.model("Booking", bookingSchema);
