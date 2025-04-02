@@ -699,9 +699,14 @@ app.post("/api/emergency-sos", async (req, res) => {
     }
 });
 
-
 app.post("/api/bookings", async (req, res) => {
     try {
+        // Validate request body
+        const { username, carModel, contactNumber, timeSlot, garageId } = req.body;
+        if (!username || !carModel || !contactNumber || !timeSlot || !garageId) {
+            return res.status(400).json({ status: false, message: "Missing required fields", data: [] });
+        }
+
         const booking = new Booking(req.body);
         await booking.save();
 
