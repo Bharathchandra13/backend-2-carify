@@ -16,7 +16,7 @@ const Ride = require("./module/RideSchema");
 const PoolerCreation = require("./module/PoolerCreation");
 const FullRide = require("./module/fullRideSchema");
 const Service = require("./module/serviceModel.js"); 
-
+const Booking = require("./module/Booking.js");
 
 
 
@@ -699,6 +699,40 @@ app.post("/api/emergency-sos", async (req, res) => {
     }
 });
 
+
+// Create a new booking
+app.post("/api/bookings", async (req, res) => {
+    try {
+        const { username, carModel, contactNumber, timeSlot, garageId } = req.body;
+
+        const newBooking = new Booking({
+            username,
+            carModel,
+            contactNumber,
+            timeSlot,
+            garageId,
+            status: "Completed"
+        });
+
+        await newBooking.save();
+
+        res.json({ status: true, message: "Booking saved successfully", data: [newBooking] });
+    } catch (error) {
+        res.status(500).json({ status: false, message: error.message, data: [] });
+    }
+});
+
+// Get all bookings for a specific garage
+app.get("/api/garage/:garageId/appointments", async (req, res) => {
+    try {
+        const { garageId } = req.params;
+        const bookings = await Booking.find({ garageId, status: "Completed" });
+
+        res.json({ status: true, message: "Appointments fetched successfully", data: bookings });
+    } catch (error) {
+        res.status(500).json({ status: false, message: error.message, data: [] });
+    }
+});
 
 
 
