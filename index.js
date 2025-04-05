@@ -7,6 +7,7 @@ const multer = require("multer");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
+const bodyParser = require('body-parser');
 
 // Import models (do not change the file names)
 const User = require("./module/signupSchema.js");
@@ -16,8 +17,9 @@ const Ride = require("./module/RideSchema");
 const PoolerCreation = require("./module/PoolerCreation");
 const FullRide = require("./module/fullRideSchema");
 const Service = require("./module/serviceModel.js"); 
+const ServiceUser = require('./module/ServiceUser');
 const Booking = require("./module/Booking.js");
-
+const appointment = require("./module/Appointment");
 
 
 dotenv.config();
@@ -26,6 +28,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));  // For form-data
 app.use(cors());
 const upload = multer();
+app.use(bodyParser.json());
 
 const MONGO_URI = "mongodb+srv://bharath:bharath123@cluster0.zyvp4.mongodb.net/CarifyDB?retryWrites=true&w=majority";
 
@@ -36,7 +39,6 @@ mongoose
     })
     .then(() => console.log("MongoDB Connected"))
     .catch(err => console.error("MongoDB Connection Error:", err));
-
 
 // ✅ Base Route
 app.get("/", (req, res) => {
@@ -348,21 +350,184 @@ app.post("/api/users", upload.none(), async (req, res) => {
     }
 });
 
+app.post("/api/bookings", async (req, res) => {
+    try {
+        const { username, carModel, contactNumber, timeSlot, garageId } = req.body;
+
+        // Validate input data
+        if (!username || !carModel || !contactNumber || !timeSlot || !garageId) {
+            return res.status(400).json({
+                status: false,
+                message: "All fields are required",
+                data: [],
+            });
+        }
+
+        // Debugging: Log incoming request body
+        console.log("Received booking request:", req.body);
+
+        // Create a new booking document
+        const newBooking = new Booking({
+            username,
+            carModel,
+            contactNumber,
+            timeSlot,
+            garageId,
+            status: "Pending", // Changed from "Completed" to "Pending"
+        });
+
+        // Save to database
+        await newBooking.save();
+
+        // Respond with success message
+        return res.status(201).json({
+            status: true,
+            message: "Booking saved successfully",
+            data: [newBooking],
+        });
+
+    } catch (error) {
+        console.error("Error saving booking:", error);
+        return res.status(500).json({
+            status: false,
+            message: "Internal server error",
+            data: [],
+        });
+    }
+});
+
+// Get all bookings for a specific garage
+app.get("/api/garage/:garageId/appointments", async (req, res) => {
+    try {
+        const { garageId } = req.params;
+        const bookings = await Booking.find({ garageId, status: "Completed" });
+
+        res.json({ status: true, message: "Appointments fetched successfully", data: bookings });
+    } catch (error) {
+        res.status(500).json({ status: false, message: error.message, data: [] });
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Create a new carpool entry
 app.post('/api/carpool', async (req, res) => {
     try {
         const { pickupLocation, dropoffLocation, selectedDate, numberOfTravelers } = req.body;
 
-        // Create a new carpool instance
-        const newCarpool = new Carpool({
-            pickupLocation,
-            dropoffLocation,
-            selectedDate,
-            numberOfTravelers
-        });
-
-        // Save to database
+        const newCarpool = new Carpool({ pickupLocation, dropoffLocation, selectedDate, numberOfTravelers });
         await newCarpool.save();
 
         return res.status(201).json({
@@ -384,49 +549,38 @@ app.post('/api/carpool', async (req, res) => {
 });
 
 // Search available rides
-app.get("/api/search", async (req, res) => {
+app.get('/api/search', async (req, res) => {
     try {
         const { from, to, date, travelers } = req.query;
 
-        // Check for missing query parameters
         if (!from || !to || !date || !travelers) {
             return res.status(400).json({
                 status: false,
                 message: "Missing required query parameters",
-                data: [],
+                data: []
             });
         }
 
-        console.log("Received search query:", { from, to, date, travelers });
-
-        // Convert date to MongoDB query range
-        const startDate = new Date(date);
-        const endDate = new Date(date);
-        endDate.setHours(23, 59, 59, 999); // Include the entire day
-
-        // Find available rides based on query parameters
         const availableRides = await Ride.find({
             pickupLocation: from,
             dropoffLocation: to,
-            selectedDate: { $gte: startDate, $lt: endDate },
-            availableSeats: { $gte: parseInt(travelers) },
+            selectedDate: date,
+            availableSeats: { $gte: travelers }
         });
-
-        console.log("Fetched rides:", availableRides);
 
         if (availableRides.length === 0) {
             return res.status(200).json({
                 status: true,
                 message: "No available rides for this route",
-                data: [],
+                data: []
             });
         }
 
         return res.status(200).json({
             status: true,
             message: "Available rides found",
-            data: availableRides.map((ride) => ({
-                id: ride._id.toString(),
+            data: availableRides.map(ride => ({
+                id: ride._id,
                 name: ride.driverName,
                 car: ride.carModel,
                 price: ride.price,
@@ -435,15 +589,14 @@ app.get("/api/search", async (req, res) => {
                 image: ride.imageUrl,
                 pickup: ride.pickupLocation,
                 dropoff: ride.dropoffLocation,
-                availableSeats: ride.availableSeats,
-            })),
+                availableSeats: ride.availableSeats
+            }))
         });
     } catch (err) {
-        console.error("Error fetching rides:", err);
         return res.status(500).json({
             status: false,
-            message: "Server error: " + err.message,
-            data: [],
+            message: err.message,
+            data: []
         });
     }
 });
@@ -595,15 +748,7 @@ app.get('/api/full-ride', async (req, res) => {
 app.post('/api/services', async (req, res) => {
     try {
         const { name, type, location, description, contactInfo, price } = req.body;
-        const newService = new Service({ 
-            name, 
-            type, 
-            location, 
-            description, 
-            contactInfo, 
-            price: price || "" // Ensure it's always a string
-        });
-
+        const newService = new Service({ name, type, location, description, contactInfo, price });
         await newService.save();
 
         return res.status(200).json({
@@ -615,39 +760,26 @@ app.post('/api/services', async (req, res) => {
         return res.status(500).json({
             status: false,
             message: err.message,
-            data: null
+            data: []
         });
     }
 });
 
-
+// ✅ Get Services by Type and Location
 app.get('/api/services', async (req, res) => {
     try {
         const { type, location } = req.query;
         let filter = {};
 
         if (type) filter.type = type;
-
-        if (location) {
-            filter.location = { $regex: location.trim(), $options: "i" };
-        }
+        if (location) filter.location = location;
 
         const services = await Service.find(filter);
-
-        // ✅ Transform MongoDB _id to id for Swift compatibility
-        const formattedServices = services.map(service => ({
-            id: service._id.toString(), // Convert MongoDB ObjectId to string
-            name: service.name,
-            type: service.type,
-            location: service.location,
-            rating: service.rating || 0, // Ensure rating exists
-            imageUrl: service.imageUrl || null
-        }));
-
+        
         return res.status(200).json({
             status: true,
             message: "Filtered Services Retrieved Successfully",
-            data: formattedServices
+            data: services
         });
     } catch (err) {
         return res.status(500).json({
@@ -657,8 +789,6 @@ app.get('/api/services', async (req, res) => {
         });
     }
 });
-
-
 
 app.post("/api/emergency-sos", async (req, res) => {
     try {
@@ -708,51 +838,88 @@ app.post("/api/emergency-sos", async (req, res) => {
     }
 });
 
-app.post("/api/bookings", async (req, res) => {
+
+
+
+
+
+//profile section for servicre
+
+// Get Profile Info
+app.post('/api/profile/get', async (req, res) => {
+    const { userId } = req.body;
     try {
-        // Validate request body
-        const { username, carModel, contactNumber, timeSlot, garageId } = req.body;
-        if (!username || !carModel || !contactNumber || !timeSlot || !garageId) {
-            return res.status(400).json({ status: false, message: "Missing required fields", data: [] });
-        }
-
-        const booking = new Booking(req.body);
-        await booking.save();
-
-        res.json({
-            status: true,
-            message: "Booking confirmed successfully!",
-            data: [booking], // Ensure data is always an array
-        });
+      const user = await User.findById(userId);
+      res.json({ status: true, message: 'Profile fetched', data: [user] });
     } catch (error) {
-        console.error("Booking Error:", error);
-        res.status(500).json({
-            status: false,
-            message: "Failed to book appointment",
-            data: [],
-        });
+      res.json({ status: false, message: 'Error fetching profile', data: [] });
     }
-});
-
-
-
-// Get all bookings for a specific garage
-app.get("/api/garage/:garageId/appointments", async (req, res) => {
+  });
+  
+  // Update Profile Info
+  app.post('/api/profile/update', async (req, res) => {
+    const { userId, name, email, phone } = req.body;
     try {
-        const { garageId } = req.params;
-        const bookings = await Booking.find({ garageId, status: "Completed" });
-
-        res.json({ status: true, message: "Appointments fetched successfully", data: bookings });
+      const updated = await User.findByIdAndUpdate(
+        userId,
+        { name, email, phone },
+        { new: true }
+      );
+      res.json({ status: true, message: 'Profile updated', data: [updated] });
     } catch (error) {
-        res.status(500).json({ status: false, message: error.message, data: [] });
+      res.json({ status: false, message: 'Error updating profile', data: [] });
     }
-});
-
-
-
-
-
-
+  });
+  
+  // ------------------- VIEW MY BOOKINGS -------------------
+  
+  // Rides booked by user (completed only)
+  app.post('/api/profile/my-bookings', async (req, res) => {
+    const { userId } = req.body;
+    try {
+      const bookings = await Booking.find({ userId, status: 'completed' }).populate('garageId');
+      res.json({ status: true, message: 'User bookings fetched', data: bookings });
+    } catch (error) {
+      res.json({ status: false, message: 'Error fetching bookings', data: [] });
+    }
+  });
+  
+  // ------------------- APPOINTMENTS (FOR GARAGE) -------------------
+  
+  // Fetch appointments for garage person
+  app.post('/api/profile/appointments', async (req, res) => {
+    const { garageId } = req.body;
+    try {
+      const appointments = await Appointment.find({ garageId }).populate('userId');
+      res.json({ status: true, message: 'Appointments fetched', data: appointments });
+    } catch (error) {
+      res.json({ status: false, message: 'Error fetching appointments', data: [] });
+    }
+  });
+  
+  // Accept or reject appointment
+  app.post('/api/profile/appointment/update', async (req, res) => {
+    const { appointmentId, status } = req.body;
+    try {
+      const updated = await Appointment.findByIdAndUpdate(appointmentId, { status }, { new: true });
+      res.json({ status: true, message: 'Appointment updated', data: [updated] });
+    } catch (error) {
+      res.json({ status: false, message: 'Error updating appointment', data: [] });
+    }
+  });
+  
+  // ------------------- GARAGE BOOKINGS -------------------
+  
+  // Garage person’s previous & upcoming bookings
+  app.post('/api/profile/garage-bookings', async (req, res) => {
+    const { garageId } = req.body;
+    try {
+      const bookings = await Booking.find({ garageId }).populate('userId');
+      res.json({ status: true, message: 'Garage bookings fetched', data: bookings });
+    } catch (error) {
+      res.json({ status: false, message: 'Error fetching garage bookings', data: [] });
+    }
+  });
 
 
 
