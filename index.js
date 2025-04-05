@@ -748,57 +748,36 @@ app.post('/api/services', async (req, res) => {
     }
 });
 
-app.post('/api/bookings', async (req, res) => {
-  try {
-    const { userId, garageId, serviceType, date, status } = req.body;
+// ✅ GET /api/services?location=SomePlace
+app.get('/api/services', async (req, res) => {
+    try {
+        const { type, location } = req.query;
+        const filter = {};
 
-    const booking = new Booking({
-      userId,
-      garageId,
-      serviceType,
-      date,
-      status: status?.toLowerCase() || 'pending' // ensure valid enum
-    });
+        if (type) filter.type = type;
+        if (location) filter.location = location;
 
-    await booking.save();
+        const services = await Service.find(filter).lean();
 
-    return res.status(200).json({
-      status: true,
-      message: "Booking created successfully",
-      data: [booking]
-    });
-  } catch (err) {
-    console.error("Error saving booking:", err);
-    return res.status(500).json({
-      status: false,
-      message: err.message,
-      data: []
-    });
-  }
+        // Format `_id` to `id` to match Swift model
+        const formatted = services.map(service => ({
+            ...service,
+            id: service._id,
+        }));
+
+        return res.status(200).json({
+            status: true,
+            message: 'Filtered Services Retrieved Successfully',
+            data: formatted
+        });
+    } catch (err) {
+        return res.status(500).json({
+            status: false,
+            message: err.message,
+            data: []
+        });
+    }
 });
-
-// =======================
-// ✅ GET ALL BOOKINGS ROUTE
-// =======================
-app.get('/api/bookings', async (req, res) => {
-  try {
-    const bookings = await Booking.find().populate('userId').populate('garageId');
-
-    return res.status(200).json({
-      status: true,
-      message: "All bookings retrieved",
-      data: bookings
-    });
-  } catch (err) {
-    console.error("Error fetching bookings:", err);
-    return res.status(500).json({
-      status: false,
-      message: err.message,
-      data: []
-    });
-  }
-});
-
 app.post("/api/emergency-sos", async (req, res) => {
     try {
         const { location } = req.body;
