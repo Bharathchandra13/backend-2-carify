@@ -350,34 +350,38 @@ app.post("/api/users", upload.none(), async (req, res) => {
     }
 });
 
+
+// ✅ BOOKING ROUTE
 app.post('/api/bookings', async (req, res) => {
-    try {
-        const { userId, poolerId, rideId, status } = req.body;
+  try {
+    const { username, carModel, contactNumber, timeSlot, garageId } = req.body;
 
-        const booking = new Booking({
-            userId,
-            poolerId,
-            rideId,
-            status: status?.toLowerCase() || 'pending' // ✅ handles "Pending" -> "pending"
-        });
+    const newBooking = new Booking({
+      username,
+      carModel,
+      contactNumber,
+      timeSlot,
+      garageId,
+      status: 'pending'
+    });
 
-        await booking.save();
+    const savedBooking = await newBooking.save();
 
-        return res.status(200).json({
-            status: true,
-            message: "Booking created successfully",
-            data: [booking]
-        });
-    } catch (err) {
-        console.error("Error saving booking:", err);
-        return res.status(500).json({
-            status: false,
-            message: err.message,
-            data: []
-        });
-    }
+    return res.status(200).json({
+      status: true,
+      message: "Booking created successfully",
+      data: [savedBooking] // ✅ data array for SwiftUI
+    });
+
+  } catch (err) {
+    console.error("Error saving booking:", err);
+    return res.status(500).json({
+      status: false,
+      message: err.message,
+      data: []
+    });
+  }
 });
-
 
 // Get all bookings for a specific garage
 app.get("/api/garage/:garageId/appointments", async (req, res) => {
