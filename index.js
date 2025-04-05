@@ -765,14 +765,15 @@ app.post('/api/services', async (req, res) => {
     }
 });
 
-// ✅ Get Services by Type and Location
 app.get('/api/services', async (req, res) => {
     try {
         const { type, location } = req.query;
         let filter = {};
 
         if (type) filter.type = type;
-        if (location) filter.location = location;
+        if (location) {
+            filter.location = { $regex: new RegExp(location, 'i') };
+        }
 
         const services = await Service.find(filter);
         
@@ -789,6 +790,7 @@ app.get('/api/services', async (req, res) => {
         });
     }
 });
+
 
 app.post("/api/emergency-sos", async (req, res) => {
     try {
