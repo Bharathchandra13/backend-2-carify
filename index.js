@@ -866,7 +866,7 @@ app.post('/api/profile/get', async (req, res) => {
   
   // ------------------- VIEW MY BOOKINGS -------------------
   
-  / ✅ Fetch user bookings
+  // ✅ Fetch user bookings
 app.post('/api/profile/my-bookings', async (req, res) => {
   const { userId } = req.body;
 
