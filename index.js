@@ -350,51 +350,34 @@ app.post("/api/users", upload.none(), async (req, res) => {
     }
 });
 
-app.post("/api/bookings", async (req, res) => {
+app.post('/api/bookings', async (req, res) => {
     try {
-        const { username, carModel, contactNumber, timeSlot, garageId } = req.body;
+        const { userId, poolerId, rideId, status } = req.body;
 
-        // Validate input data
-        if (!username || !carModel || !contactNumber || !timeSlot || !garageId) {
-            return res.status(400).json({
-                status: false,
-                message: "All fields are required",
-                data: [],
-            });
-        }
-
-        // Debugging: Log incoming request body
-        console.log("Received booking request:", req.body);
-
-        // Create a new booking document
-        const newBooking = new Booking({
-            username,
-            carModel,
-            contactNumber,
-            timeSlot,
-            garageId,
-            status: "Pending", // Changed from "Completed" to "Pending"
+        const booking = new Booking({
+            userId,
+            poolerId,
+            rideId,
+            status: status?.toLowerCase() || 'pending' // ✅ handles "Pending" -> "pending"
         });
 
-        // Save to database
-        await newBooking.save();
+        await booking.save();
 
-        // Respond with success message
-        return res.status(201).json({
+        return res.status(200).json({
             status: true,
-            message: "Booking saved successfully",
-            data: [newBooking],
+            message: "Booking created successfully",
+            data: [booking]
         });
-
-    } catch (error) {
-        console.error("Error saving booking:", error);
+    } catch (err) {
+        console.error("Error saving booking:", err);
         return res.status(500).json({
             status: false,
-            message: "Internal server error",
-            data: [],
+            message: err.message,
+            data: []
         });
     }
 });
+
 
 // Get all bookings for a specific garage
 app.get("/api/garage/:garageId/appointments", async (req, res) => {
