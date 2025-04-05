@@ -19,7 +19,8 @@ const FullRide = require("./module/fullRideSchema");
 const Service = require("./module/serviceModel.js"); 
 const ServiceUser = require('./module/ServiceUser');
 const Booking = require("./module/Booking.js");
-const appointment = require("./module/Appointment");
+const appointment = require("./module/Appointment.js");
+const bookingSchema = require("./module/bookingSchema.js");
 
 
 dotenv.config();
