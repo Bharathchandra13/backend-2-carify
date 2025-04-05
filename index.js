@@ -765,22 +765,35 @@ app.post('/api/services', async (req, res) => {
     }
 });
 
+// ✅ GET services by type and/or location
 app.get('/api/services', async (req, res) => {
     try {
         const { type, location } = req.query;
         let filter = {};
 
+        // Flexible filtering
         if (type) filter.type = type;
         if (location) {
-            filter.location = { $regex: new RegExp(location, 'i') };
+            filter.location = { $regex: new RegExp(location, 'i') }; // partial match, case-insensitive
         }
 
-        const services = await Service.find(filter);
-        
+        const services = await Service.find(filter).lean();
+
+        // Map _id to id for SwiftUI compatibility
+        const mappedServices = services.map(service => ({
+            id: service._id.toString(),
+            name: service.name,
+            type: service.type,
+            location: service.location,
+            rating: service.rating,
+            imageUrl: service.imageUrl,
+            contactNumber: service.contactNumber
+        }));
+
         return res.status(200).json({
             status: true,
             message: "Filtered Services Retrieved Successfully",
-            data: services
+            data: mappedServices
         });
     } catch (err) {
         return res.status(500).json({
@@ -790,6 +803,7 @@ app.get('/api/services', async (req, res) => {
         });
     }
 });
+
 
 
 app.post("/api/emergency-sos", async (req, res) => {
