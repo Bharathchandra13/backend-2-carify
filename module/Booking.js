@@ -1,16 +1,11 @@
 const mongoose = require('mongoose');
 
 const bookingSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  garageId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  serviceType: String, // e.g., "Car Wash"
-  date: Date,
+  username: { type: String, required: true },
+  carModel: { type: String, required: true },
+  contactNumber: { type: String, required: true },
+  timeSlot: { type: String, required: true },
+  garageId: { type: String, required: true },
   status: {
     type: String,
     enum: ['pending', 'completed'],
