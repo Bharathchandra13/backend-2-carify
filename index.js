@@ -23,6 +23,8 @@ const appointment = require("./module/Appointment.js");
 const bookingSchema = require("./module/bookingSchema.js");
 
 
+
+
 dotenv.config();
 const app = express();
 app.use(express.json());
