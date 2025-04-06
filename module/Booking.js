@@ -1,16 +1,24 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const bookingSchema = new mongoose.Schema({
-  username: { type: String, required: true },
-  carModel: { type: String, required: true },
-  contactNumber: { type: String, required: true },
-  timeSlot: { type: String, required: true },
-  garageId: { type: String, required: true },
-  status: {
-    type: String,
-    enum: ['pending', 'completed'],
-    default: 'pending'
-  }
+    username: String,
+    carModel: String,
+    contactNumber: String,
+    timeSlot: String,
+    garageId: String,
+    serviceType: String,
+    location: String,
+    status: {
+        type: String,
+        default: "Pending"
+    },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    }
+}, {
+    timestamps: true
 });
 
-module.exports = mongoose.model('Booking', bookingSchema);
+module.exports = mongoose.model("Booking", bookingSchema);
