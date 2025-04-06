@@ -943,27 +943,43 @@ app.post('/api/profile/cancel-booking', async (req, res) => {
   
   // ------------------- APPOINTMENTS (FOR GARAGE) -------------------
   
-  // Fetch appointments for garage person
-  app.post('/api/profile/appointments', async (req, res) => {
-    const { garageId } = req.body;
-    try {
-      const appointments = await Appointment.find({ garageId }).populate('userId');
-      res.json({ status: true, message: 'Appointments fetched', data: appointments });
-    } catch (error) {
-      res.json({ status: false, message: 'Error fetching appointments', data: [] });
-    }
-  });
-  
-  // Accept or reject appointment
-  app.post('/api/profile/appointment/update', async (req, res) => {
-    const { appointmentId, status } = req.body;
-    try {
-      const updated = await Appointment.findByIdAndUpdate(appointmentId, { status }, { new: true });
-      res.json({ status: true, message: 'Appointment updated', data: [updated] });
-    } catch (error) {
-      res.json({ status: false, message: 'Error updating appointment', data: [] });
-    }
-  });
+ const Appointment = require('./models/appointment'); // make sure the path is correct
+
+app.get('/api/garage/:garageId/appointments', async (req, res) => {
+  const { garageId } = req.params;
+
+  try {
+    const appointments = await Appointment.find({ garageId });
+
+    const formatted = appointments.map(appt => ({
+      id: appt._id,
+      username: appt.username,
+      email: appt.email || "Not Provided",
+      serviceType: appt.serviceType,
+      userCar: appt.userCar,
+      date: appt.date,
+      location: appt.location || "Not Provided",
+      contactNumber: appt.contactNumber,
+      status: appt.status,
+      garageID: appt.garageId,
+      notes: appt.notes || ""
+    }));
+
+    res.json({
+      status: true,
+      message: 'Appointments fetched successfully',
+      data: formatted
+    });
+  } catch (error) {
+    console.error(error);
+    res.json({
+      status: false,
+      message: 'Failed to fetch appointments',
+      data: []
+    });
+  }
+});
+
   
   // ------------------- GARAGE BOOKINGS -------------------
   
