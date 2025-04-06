@@ -679,6 +679,75 @@ app.get('/api/full-ride', async (req, res) => {
     }
 });
 
+
+//view fullride booking requets
+app.post('/api/full-ride/book', async (req, res) => {
+    try {
+        const { leavingFrom, goingTo, selectedDate, vehicleType, poolerId } = req.body;
+
+        const newRide = new FullRide({
+            leavingFrom,
+            goingTo,
+            selectedDate,
+            vehicleType,
+            pooler: poolerId
+        });
+
+        await newRide.save();
+
+        return res.status(201).json({
+            status: true,
+            message: 'Ride booked successfully',
+            data: newRide
+        });
+    } catch (err) {
+        return res.status(500).json({
+            status: false,
+            message: err.message,
+            data: []
+        });
+    }
+});
+
+
+app.get('/api/full-ride', async (req, res) => {
+    try {
+        const rides = await FullRide.find()
+            .sort({ createdAt: -1 })
+            .populate('pooler', 'name email phoneNumber');
+
+        return res.status(200).json({
+            status: true,
+            message: "Full ride bookings fetched successfully",
+            data: rides.map(ride => ({
+                id: ride._id,
+                leavingFrom: ride.leavingFrom,
+                goingTo: ride.goingTo,
+                selectedDate: ride.selectedDate,
+                vehicleType: ride.vehicleType,
+                pooler: ride.pooler ? {
+                    name: ride.pooler.name,
+                    email: ride.pooler.email,
+                    phoneNumber: ride.pooler.phoneNumber
+                } : null
+            }))
+        });
+    } catch (err) {
+        return res.status(500).json({
+            status: false,
+            message: err.message,
+            data: []
+        });
+    }
+});
+
+
+
+
+
+
+
+
 // ✅ Create a Service
 app.post('/api/services', async (req, res) => {
     try {
