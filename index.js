@@ -68,13 +68,13 @@ app.get("/api/login", async (req, res) => {
 // 🟢 Signup (User Registration)
 app.post("/api/signup", upload.none(), async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, role } = req.body;
 
         // Validate required fields
-        if (!name || !email || !password) {
+        if (!name || !email || !password || !role) {
             return res.status(400).json({
                 status: false,
-                message: "All fields are required",
+                message: "All fields (name, email, password, role) are required",
                 data: []
             });
         }
@@ -89,9 +89,11 @@ app.post("/api/signup", upload.none(), async (req, res) => {
             });
         }
 
-        // Hash password and save new user
+        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ name, email, password: hashedPassword });
+
+        // Create and save the user
+        const newUser = new User({ name, email, password: hashedPassword, role });
         await newUser.save();
 
         return res.status(201).json({
@@ -101,7 +103,8 @@ app.post("/api/signup", upload.none(), async (req, res) => {
                 {
                     id: newUser._id,
                     name: newUser.name,
-                    email: newUser.email
+                    email: newUser.email,
+                    role: newUser.role
                 }
             ]
         });
@@ -114,7 +117,6 @@ app.post("/api/signup", upload.none(), async (req, res) => {
         });
     }
 });
-
 
 // 🟢 Login (Registration)
 // 🟢 Login (User Authentication)
