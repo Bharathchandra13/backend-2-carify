@@ -19,9 +19,8 @@ const FullRide = require("./module/fullRideSchema");
 const Service = require("./module/serviceModel.js"); 
 const ServiceUser = require('./module/ServiceUser');
 const Booking = require("./module/Booking.js");
-const appointment = require("./module/Appointment.js");
 const bookingSchema = require("./module/bookingSchema.js");
-
+const Appointment = require("./module/Appointment.js");
 
 
 
@@ -945,18 +944,16 @@ app.post('/api/profile/cancel-booking', async (req, res) => {
   
   // ------------------- APPOINTMENTS (FOR GARAGE) -------------------
   
- const Appointment = require('./models/appointment'); // make sure the path is correct
-
 app.get('/api/garage/:garageId/appointments', async (req, res) => {
   const { garageId } = req.params;
 
   try {
-    const appointments = await Appointment.find({ garageId });
+    const appointments = await Appointment.find({ garageId }).populate('userId');
 
     const formatted = appointments.map(appt => ({
       id: appt._id,
-      username: appt.username,
-      email: appt.email || "Not Provided",
+      username: appt.userId?.name || "No Name", // ✅ from populated user
+      email: appt.userId?.email || "Not Provided",
       serviceType: appt.serviceType,
       userCar: appt.userCar,
       date: appt.date,
