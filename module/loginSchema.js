@@ -1,6 +1,12 @@
-const mongoose = require("mongoose");
-
 const LoginSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    role: {
+        type: String,
+        required: true
+    },
     email: {
         type: String,
         required: [true, "Please enter email"],
@@ -14,9 +20,4 @@ const LoginSchema = new mongoose.Schema({
         type: String,
         required: false
     }
-}, {
-    timestamps: true,
 });
-
-const Login = mongoose.model("Login", LoginSchema);
-module.exports = Login;
