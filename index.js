@@ -122,7 +122,6 @@ app.post("/api/login", upload.none(), async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Validate required fields
         if (!email || !password) {
             return res.status(400).json({
                 status: false,
@@ -131,7 +130,6 @@ app.post("/api/login", upload.none(), async (req, res) => {
             });
         }
 
-        // Check if user exists
         const existingUser = await User.findOne({ email });
         if (!existingUser) {
             return res.status(400).json({
@@ -139,63 +137,8 @@ app.post("/api/login", upload.none(), async (req, res) => {
                 message: "Invalid email or password",
                 data: []
             });
-        }app.post("/api/login", upload.none(), async (req, res) => {
-            try {
-                const { email, password } = req.body;
-        
-                // Validate required fields
-                if (!email || !password) {
-                    return res.status(400).json({
-                        status: false,
-                        message: "Email and password are required",
-                        data: []
-                    });
-                }
-        
-                // Check if user exists
-                const existingUser = await User.findOne({ email });
-                if (!existingUser) {
-                    return res.status(400).json({
-                        status: false,
-                        message: "Invalid email or password",
-                        data: []
-                    });
-                }
-        
-                // Validate password
-                const isPasswordValid = await bcrypt.compare(password, existingUser.password);
-                if (!isPasswordValid) {
-                    return res.status(400).json({
-                        status: false,
-                        message: "Invalid email or password",
-                        data: []
-                    });
-                }
-        
-                // Successful login response
-                return res.status(200).json({
-                    status: true,
-                    message: "Login successful",
-                    data: [
-                        {
-                            id: existingUser._id,
-                            name: existingUser.name,
-                            email: existingUser.email
-                        }
-                    ]
-                });
-            } catch (err) {
-                console.error("Login error:", err.message);
-                return res.status(500).json({
-                    status: false,
-                    message: "Internal Server Error",
-                    data: []
-                });
-            }
-        });
-        
+        }
 
-        // Validate password
         const isPasswordValid = await bcrypt.compare(password, existingUser.password);
         if (!isPasswordValid) {
             return res.status(400).json({
@@ -205,7 +148,6 @@ app.post("/api/login", upload.none(), async (req, res) => {
             });
         }
 
-        // Successful login response
         return res.status(200).json({
             status: true,
             message: "Login successful",
@@ -213,7 +155,8 @@ app.post("/api/login", upload.none(), async (req, res) => {
                 {
                     id: existingUser._id,
                     name: existingUser.name,
-                    email: existingUser.email
+                    email: existingUser.email,
+                    role: existingUser.role
                 }
             ]
         });
