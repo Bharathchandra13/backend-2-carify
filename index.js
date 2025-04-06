@@ -813,78 +813,32 @@ app.post('/api/profile/get', async (req, res) => {
   
   // ------------------- VIEW MY BOOKINGS -------------------
   
-  // ✅ Fetch user bookings
-app.post('/api/profile/my-bookings', async (req, res) => {
-  const { userId } = req.body;
+ app.post("/api/profile/my-bookings", async (req, res) => {
+    const { userId } = req.body;
 
-  if (!userId) {
-    return res.status(400).json({
-      status: false,
-      message: 'User ID is required',
-      data: [],
-    });
-  }
+    try {
+        const bookings = await Booking.find({ userId });
 
-  try {
-    const bookings = await Booking.find({ userId });
+        const responseData = bookings.map(b => ({
+            _id: b._id,
+            serviceType: b.serviceType || b.carModel || "Service",
+            location: b.garageId,
+            status: b.status
+        }));
 
-    const formatted = bookings.map(b => ({
-      _id: b._id,
-      serviceType: b.serviceType,
-      location: b.location,
-      status: b.status,
-      scheduledAt: b.scheduledAt,
-    }));
-
-    res.json({
-      status: true,
-      message: 'Bookings fetched successfully',
-      data: formatted,
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: false,
-      message: 'Server error',
-      data: [],
-    });
-  }
-});
-
-// ✅ Cancel a booking
-app.post('/api/profile/cancel-booking', async (req, res) => {
-  const { bookingId } = req.body;
-
-  if (!bookingId) {
-    return res.status(400).json({
-      status: false,
-      message: 'Booking ID is required',
-      data: [],
-    });
-  }
-
-  try {
-    const result = await Booking.findByIdAndUpdate(bookingId, { status: 'Cancelled' });
-
-    if (!result) {
-      return res.status(404).json({
-        status: false,
-        message: 'Booking not found',
-        data: [],
-      });
+        res.json({
+            status: true,
+            message: "User bookings fetched successfully",
+            data: responseData
+        });
+    } catch (error) {
+        console.error("Error fetching bookings:", error);
+        res.json({
+            status: false,
+            message: "Failed to fetch user bookings",
+            data: []
+        });
     }
-
-    res.json({
-      status: true,
-      message: 'Booking cancelled successfully',
-      data: [],
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: false,
-      message: 'Server error',
-      data: [],
-    });
-  }
 });
 
   
