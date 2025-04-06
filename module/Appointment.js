@@ -3,27 +3,23 @@ const mongoose = require('mongoose');
 const appointmentSchema = new mongoose.Schema({
   garageId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: 'User'
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    default: null
+    ref: 'User'
   },
-  username: String,
-  email: String,
   serviceType: String,
   userCar: String,
   date: Date,
   location: String,
   contactNumber: String,
-  notes: String,
   status: {
     type: String,
-    enum: ['pending', 'accepted', 'rejected', 'completed'],
+    enum: ['pending', 'accepted', 'rejected'],
     default: 'pending'
-  }
+  },
+  notes: String
 });
 
 module.exports = mongoose.model('Appointment', appointmentSchema);
