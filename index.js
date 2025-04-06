@@ -132,7 +132,7 @@ app.post("/api/login", upload.none(), async (req, res) => {
 
         const existingUser = await User.findOne({ email });
         if (!existingUser) {
-            return res.status(400).json({
+            return res.status(401).json({
                 status: false,
                 message: "Invalid email or password",
                 data: []
@@ -141,7 +141,7 @@ app.post("/api/login", upload.none(), async (req, res) => {
 
         const isPasswordValid = await bcrypt.compare(password, existingUser.password);
         if (!isPasswordValid) {
-            return res.status(400).json({
+            return res.status(401).json({
                 status: false,
                 message: "Invalid email or password",
                 data: []
@@ -169,6 +169,7 @@ app.post("/api/login", upload.none(), async (req, res) => {
         });
     }
 });
+
 
 
 // 🟢 Update user by ID
