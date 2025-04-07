@@ -21,7 +21,7 @@ const ServiceUser = require('./module/ServiceUser');
 const Booking = require("./module/Booking.js");
 const bookingSchema = require("./module/bookingSchema.js");
 const Appointment = require("./module/Appointment.js");
-const Ride = require("./module/rideModel.js");
+const Rides = require("./module/rideModel.js");
 
 
 
