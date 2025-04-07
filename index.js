@@ -21,6 +21,7 @@ const ServiceUser = require('./module/ServiceUser');
 const Booking = require("./module/Booking.js");
 const bookingSchema = require("./module/bookingSchema.js");
 const Appointment = require("./module/Appointment.js");
+const Ride = require("./module/rideModel.js");
 
 
 
@@ -483,59 +484,40 @@ app.post('/api/carpool', async (req, res) => {
     }
 });
 
-// Search available rides
+// Search rides based on query
 app.get('/api/search', async (req, res) => {
-    try {
-        const { from, to, date, travelers } = req.query;
+  try {
+    const { from, to, date, travelers } = req.query;
 
-        if (!from || !to || !date || !travelers) {
-            return res.status(400).json({
-                status: false,
-                message: "Missing required query parameters",
-                data: []
-            });
-        }
-
-        const availableRides = await Ride.find({
-            pickupLocation: from,
-            dropoffLocation: to,
-            selectedDate: date,
-            availableSeats: { $gte: travelers }
-        });
-
-        if (availableRides.length === 0) {
-            return res.status(200).json({
-                status: true,
-                message: "No available rides for this route",
-                data: []
-            });
-        }
-
-        return res.status(200).json({
-            status: true,
-            message: "Available rides found",
-            data: availableRides.map(ride => ({
-                id: ride._id,
-                name: ride.driverName,
-                car: ride.carModel,
-                price: ride.price,
-                time: ride.time,
-                rating: ride.rating,
-                image: ride.imageUrl,
-                pickup: ride.pickupLocation,
-                dropoff: ride.dropoffLocation,
-                availableSeats: ride.availableSeats
-            }))
-        });
-    } catch (err) {
-        return res.status(500).json({
-            status: false,
-            message: err.message,
-            data: []
-        });
+    if (!from || !to || !date || !travelers) {
+      return res.json({
+        status: false,
+        message: 'Missing required parameters',
+        data: []
+      });
     }
-});
 
+    const rides = await Ride.find({
+      pickup: { $regex: new RegExp(`^${from}$`, 'i') },
+      dropoff: { $regex: new RegExp(`^${to}$`, 'i') },
+      date: date,
+      availableSeats: { $gte: parseInt(travelers) }
+    });
+
+    res.json({
+      status: true,
+      message: 'Rides fetched successfully',
+      data: rides
+    });
+  } catch (error) {
+    console.error('Search error:', error);
+    res.status(500).json({
+      status: false,
+      message: 'Server error',
+      data: []
+    });
+  }
+});
 
 app.post("/api/poolercreation", async (req, res) => {
     try {
