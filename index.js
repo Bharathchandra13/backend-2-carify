@@ -21,7 +21,7 @@ const ServiceUser = require('./module/ServiceUser');
 const Booking = require("./module/Booking.js");
 const bookingSchema = require("./module/bookingSchema.js");
 const Appointment = require("./module/Appointment.js");
-
+const CarifyRide = require('./module/carifyRideModel.js');
 
 
 
@@ -485,6 +485,7 @@ app.post('/api/carpool', async (req, res) => {
 });
 
 // Search rides based on query
+// Search API
 app.get('/api/search', async (req, res) => {
   try {
     const { from, to, date, travelers } = req.query;
@@ -497,7 +498,7 @@ app.get('/api/search', async (req, res) => {
       });
     }
 
-    const rides = await Ride.find({
+    const rides = await CarifyRide.find({
       pickup: { $regex: new RegExp(`^${from}$`, 'i') },
       dropoff: { $regex: new RegExp(`^${to}$`, 'i') },
       date: date,
